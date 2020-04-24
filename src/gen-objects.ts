@@ -156,7 +156,7 @@ export function addChartDefinition(target: ISlideLib, type: CHART_NAME | IChartM
 		// as well as a single data source for non-series operations.
 		// The data is indexed below to keep the data in order when segmented
 		// into types.
-		type.forEach(obj => {
+		type.forEach((obj) => {
 			tmpData = tmpData.concat(obj.data)
 		})
 		tmpOpt = data || opt
@@ -216,7 +216,7 @@ export function addChartDefinition(target: ISlideLib, type: CHART_NAME | IChartM
 	options.lineDataSymbolLineSize = options.lineDataSymbolLineSize && !isNaN(options.lineDataSymbolLineSize) ? options.lineDataSymbolLineSize * ONEPT : 0.75 * ONEPT
 	// `layout` allows the override of PPT defaults to maximize space
 	if (options.layout) {
-		;['x', 'y', 'w', 'h'].forEach(key => {
+		;['x', 'y', 'w', 'h'].forEach((key) => {
 			let val = options.layout[key]
 			if (isNaN(Number(val)) || val < 0 || val > 1) {
 				console.warn('Warning: chart.layout.' + key + ' can only be 0-1')
@@ -648,7 +648,7 @@ export function addTableDefinition(
 	// STEP 2: Transform `tableRows` into well-formatted ITableCell's
 	// tableRows can be object or plain text array: `[{text:'cell 1'}, {text:'cell 2', options:{color:'ff0000'}}]` | `["cell 1", "cell 2"]`
 	let arrRows: [ITableCell[]?] = []
-	tableRows.forEach(row => {
+	tableRows.forEach((row) => {
 		let newRow: ITableCell[] = []
 
 		if (Array.isArray(row)) {
@@ -714,7 +714,14 @@ export function addTableDefinition(
 
 	// Calc table width depending upon what data we have - several scenarios exist (including bad data, eg: colW doesnt match col count)
 	if (opt.colW) {
-		let firstRowColCnt = arrRows[0].length
+		let firstRowColCnt = arrRows[0].reduce((totalLen, c) => {
+			if (c && c.options && c.options.colspan && typeof c.options.colspan === 'number') {
+				totalLen += c.options.colspan
+			} else {
+				totalLen += 1
+			}
+			return totalLen
+		}, 0)
 
 		// Ex: `colW = 3` or `colW = '3'`
 		if (typeof opt.colW === 'string' || typeof opt.colW === 'number') {
@@ -744,7 +751,7 @@ export function addTableDefinition(
 	if (opt.h && opt.h < 20) opt.h = inch2Emu(opt.h)
 
 	// STEP 5: Loop over cells: transform each to ITableCell; check to see whether to skip autopaging while here
-	arrRows.forEach(row => {
+	arrRows.forEach((row) => {
 		row.forEach((cell, idy) => {
 			// A: Transform cell data if needed
 			/* Table rows can be an object or plain text - transform into object when needed
@@ -888,12 +895,12 @@ export function addTextDefinition(target: ISlideLib, text: string | IText[], opt
  */
 export function addPlaceholdersToSlideLayouts(slide: ISlideLib) {
 	// Add all placeholders on this Slide that dont already exist
-	;(slide.slideLayout.data || []).forEach(slideLayoutObj => {
+	;(slide.slideLayout.data || []).forEach((slideLayoutObj) => {
 		if (slideLayoutObj.type === SLIDE_OBJECT_TYPES.placeholder) {
 			// A: Search for this placeholder on Slide before we add
 			// NOTE: Check to ensure a placeholder does not already exist on the Slide
 			// They are created when they have been populated with text (ex: `slide.addText('Hi', { placeholder:'title' });`)
-			if (slide.data.filter(slideObj => slideObj.options && slideObj.options.placeholder === slideLayoutObj.options.placeholder).length === 0) {
+			if (slide.data.filter((slideObj) => slideObj.options && slideObj.options.placeholder === slideLayoutObj.options.placeholder).length === 0) {
 				addTextDefinition(slide, '', { placeholder: slideLayoutObj.options.placeholder }, false)
 			}
 		}
